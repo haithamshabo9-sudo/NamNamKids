@@ -23,11 +23,17 @@ public class MainActivity extends Activity {
     private ValueCallback<Uri[]> uploadMessage;
     private final static int FILE_CHOOSER_RESULT_CODE = 1;
 
+    // متغيرات جديدة للتحكم في وضع ملء الشاشة للفيديو
+    private View customView;
+    private WebChromeClient.CustomViewCallback customViewCallback;
+    private FrameLayout frameLayout;
+    private Button backButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        FrameLayout frameLayout = new FrameLayout(this);
+        frameLayout = new FrameLayout(this);
 
         webView = new WebView(this);
         webView.getSettings().setJavaScriptEnabled(true);
@@ -38,6 +44,7 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient());
 
         webView.setWebChromeClient(new WebChromeClient() {
+            // رفع الملفات
             @Override
             public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
                 if (uploadMessage != null) {
@@ -55,9 +62,58 @@ public class MainActivity extends Activity {
                 }
                 return true;
             }
+
+            // --- دوال تكبير الفيديو لملء الشاشة ---
+            @Override
+            public void onShowCustomView(View view, CustomViewCallback callback) {
+                if (customView != null) {
+                    callback.onCustomViewHidden();
+                    return;
+                }
+                customView = view;
+                customViewCallback = callback;
+
+                // إخفاء الويب فيو وزر القمر أثناء مشاهدة الفيديو
+                webView.setVisibility(View.GONE);
+                if (backButton != null) backButton.setVisibility(View.GONE);
+
+                // عرض الفيديو بملء الشاشة
+                frameLayout.addView(customView, new FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.MATCH_PARENT, 
+                        FrameLayout.LayoutParams.MATCH_PARENT));
+                
+                // إخفاء شريط الإشعارات العلوي لتجربة ملء شاشة حقيقية
+                getWindow().getDecorView().setSystemUiVisibility(
+                        View.SYSTEM_UI_FLAG_FULLSCREEN | 
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | 
+                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+            }
+
+            @Override
+            public void onHideCustomView() {
+                if (customView == null) {
+                    return;
+                }
+                // إزالة واجهة الفيديو
+                customView.setVisibility(View.GONE);
+                frameLayout.removeView(customView);
+                customView = null;
+
+                // إظهار الويب فيو وزر القمر مرة أخرى
+                webView.setVisibility(View.VISIBLE);
+                if (backButton != null) backButton.setVisibility(View.VISIBLE);
+
+                if (customViewCallback != null) {
+                    customViewCallback.onCustomViewHidden();
+                    customViewCallback = null;
+                }
+                
+                // إعادة إظهار شريط الإشعارات
+                getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+            }
         });
 
-        // تحميل صفحة الويب المحلية عند فتح التطبيق[cite: 5]
+        // تحميل صفحة الويب المحلية عند فتح التطبيق
         webView.loadUrl("file:///android_asset/index.html");
 
         webView.setDownloadListener(new DownloadListener() {
@@ -93,22 +149,20 @@ public class MainActivity extends Activity {
                 FrameLayout.LayoutParams.MATCH_PARENT, 
                 FrameLayout.LayoutParams.MATCH_PARENT));
 
-      // تصميم زر الرجوع على شكل قمر بخلفية شفافة
-        Button backButton = new Button(this);
-        backButton.setText("🌙"); // استخدام إيموجي القمر
-        backButton.setTextSize(32); // حجم القمر (يمكنك تكبيره أو تصغيره بتغيير هذا الرقم)
-        backButton.setBackgroundColor(Color.TRANSPARENT); // خلفية شفافة ليظهر القمر وحده
+        // تصميم زر الرجوع
+        backButton = new Button(this);
+        backButton.setText("🌙"); 
+        backButton.setTextSize(32); 
+        backButton.setBackgroundColor(Color.TRANSPARENT); 
         backButton.setPadding(15, 15, 15, 15);
 
-        // وضع القمر في الزاوية اليمنى بالأسفل
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT, 
                 FrameLayout.LayoutParams.WRAP_CONTENT);
-        params.gravity = Gravity.BOTTOM | Gravity.RIGHT; // التثبيت في الزاوية اليمنى السفلية
-        params.setMargins(0, 0, 40, 120); // إزاحته قليلاً عن حافة الشاشة ليكون سهل الضغط
+        params.gravity = Gravity.BOTTOM | Gravity.RIGHT; 
+        params.setMargins(0, 0, 40, 120); 
         backButton.setLayoutParams(params);
 
-        // التعديل الجذري: عند الضغط يتم إعادة تحميل الصفحة للعودة إلى الشاشة الأولى فوراً
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -125,10 +179,18 @@ public class MainActivity extends Activity {
     // زر الرجوع في الهاتف (الفيزيائي)
     @Override
     public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) {
+        // إذا كان الفيديو يعمل بملء الشاشة، قم بالخروج منه أولاً
+        if (customView != null) {
+            WebChromeClient client = webView.getWebChromeClient();
+            if (client != null) {
+                client.onHideCustomView();
+            }
+        } 
+        // وإلا، ارجع للصفحة السابقة أو اخرج من التطبيق
+        else if (webView != null && webView.canGoBack()) {
             webView.goBack();
         } else {
-            super.onBackPressed(); // الخروج من التطبيق
+            super.onBackPressed();
         }
     }
 
