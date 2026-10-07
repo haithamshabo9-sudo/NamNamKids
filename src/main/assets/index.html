@@ -551,7 +551,7 @@ function nClear(){ try { JSON.parse(Native.getTrees()).forEach(t => Native.remov
 /* ---------- ملفات الأطفال ---------- */
 const AVATARS = ['🦊','🐼','🦄','🐯','🐸','🐰','🦁','🐙'];
 let profiles = lsj('kidprofiles', null);
-if (!Array.isArray(profiles) || !profiles.length) profiles = [{id:'p1', name:'بطل', avatar:'🦊', age:0, daily:0, allowed:null, favs:[]}];
+if (!Array.isArray(profiles) || !profiles.length) profiles = [{id:'p1', name:'شغف ترحب بكم', avatar:'file:///android_res/drawable/ic_launcher.png', age:0, daily:0, allowed:null, favs:[]}];
 let curProfile = store.get('kidcur'); if (!profiles.some(p => p.id === curProfile)) curProfile = profiles[0].id;
 const saveP = () => lss('kidprofiles', profiles);
 const prof = () => profiles.find(p => p.id === curProfile) || profiles[0];
