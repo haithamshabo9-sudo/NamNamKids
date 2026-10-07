@@ -218,8 +218,8 @@ public class MainActivity extends Activity {
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT, 
                 FrameLayout.LayoutParams.WRAP_CONTENT);
-        params.gravity = Gravity.BOTTOM | Gravity.RIGHT; 
-        params.setMargins(0, 0, 40, 120); 
+        params.gravity = Gravity.TOP | Gravity.LEFT; 
+        params.setMargins(40, 80, 0, 0); 
         backButton.setLayoutParams(params);
 
         backButton.setOnClickListener(new View.OnClickListener() {
