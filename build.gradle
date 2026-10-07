@@ -1,5 +1,5 @@
 plugins {
-    id 'com.android.application'
+    id 'com.android.application' version '8.2.2'
 }
 
 android {
@@ -14,9 +14,6 @@ android {
         versionName "1.0"
     }
 
-    buildTypes {
-        release { minifyEnabled false }
-    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
