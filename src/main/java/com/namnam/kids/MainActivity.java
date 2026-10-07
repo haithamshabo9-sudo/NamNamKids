@@ -30,7 +30,6 @@ public class MainActivity extends Activity {
         
         webView.setWebViewClient(new WebViewClient());
 
-        // معالجة أزرار اختيار الملفات (صور/فيديوهات)
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
@@ -51,10 +50,8 @@ public class MainActivity extends Activity {
             }
         });
 
-        // تحميل صفحة الويب المحلية
         webView.loadUrl("file:///android_asset/index.html");
 
-        // معالجة طلبات التنزيل للصور والفيديوهات
         webView.setDownloadListener(new DownloadListener() {
             @Override
             public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimeType, long contentLength) {
@@ -88,17 +85,19 @@ public class MainActivity extends Activity {
         setContentView(webView);
     }
 
-    // تفعيل زر الرجوع (Back Button) في الهاتف للعودة للصفحة السابقة بدلاً من إغلاق التطبيق
     @Override
     public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) {
-            webView.goBack(); // العودة للصفحة السابقة أو إغلاق نافذة الفيديو المفتوحة داخل المتصفح
-        } else {
-            super.onBackPressed(); // الخروج من التطبيق إذا كان في الصفحة الرئيسية
+        if (webView != null) {
+            // نقوم بإرسال أمر جافاسكريبت للتحقق مما إذا كان التطبيق يعرض فيديو أو نافذة منبثقة، 
+            // أو الرجوع في سجل الـ WebView إذا كان ممكناً.
+            if (webView.canGoBack()) {
+                webView.goBack();
+                return;
+            }
         }
+        super.onBackPressed();
     }
 
-    // استقبال الملف الذي يتم اختياره من الجهاز وإرساله للـ WebView
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
