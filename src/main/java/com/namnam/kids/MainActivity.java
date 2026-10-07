@@ -27,7 +27,6 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // إنشاء حاوية رئيسية لتجميع الـ WebView وزر الرجوع فوقه
         FrameLayout frameLayout = new FrameLayout(this);
 
         webView = new WebView(this);
@@ -38,7 +37,6 @@ public class MainActivity extends Activity {
         
         webView.setWebViewClient(new WebViewClient());
 
-        // معالجة اختيار الملفات والصور والفيديوهات من الجهاز
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
@@ -59,10 +57,9 @@ public class MainActivity extends Activity {
             }
         });
 
-        // تحميل صفحة الويب المحلية للتطبيق[cite: 5]
+        // تحميل صفحة الويب المحلية[cite: 5]
         webView.loadUrl("file:///android_asset/index.html");
 
-        // معالجة طلبات التنزيل للصور والفيديوهات
         webView.setDownloadListener(new DownloadListener() {
             @Override
             public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimeType, long contentLength) {
@@ -92,56 +89,57 @@ public class MainActivity extends Activity {
             }
         });
 
-        // إضافة الـ WebView إلى الحاوية الرئيسية
         frameLayout.addView(webView, new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, 
                 FrameLayout.LayoutParams.MATCH_PARENT));
 
-        // إنشاء زر رجوع عائم يظهر في "أسفل الشاشة" بمنتصف العرض
+        // تصميم زر الرجوع العائم في أسفل الشاشة
         Button backButton = new Button(this);
         backButton.setText("⬅ رجوع للخلف");
         backButton.setTextColor(Color.WHITE);
-        backButton.setBackgroundColor(Color.parseColor("#CCFF5722")); // لون برتقالي غامق وبارز ومريح للعينية
+        backButton.setBackgroundColor(Color.parseColor("#CCFF5722"));
         backButton.setPadding(40, 20, 40, 20);
 
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT, 
                 FrameLayout.LayoutParams.WRAP_CONTENT);
-        params.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL; // التثبيت في الأسفل بالمنتصف
-        params.setMargins(0, 0, 0, 60); // مسافة مرتفعة قليلاً عن حافة الهاتف السفلية
+        params.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
+        params.setMargins(0, 0, 0, 60);
         backButton.setLayoutParams(params);
 
-        // برمجة وظيفة زر الرجوع لتعمل بفعالية عبر الجافاسكريبت والتاريخ
+        // عند الضغط على زر الرجوع، يتم إيقاف الفيديو وإخفاء مشغلات العرض برمجياً عبر الجافاسكريبت
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (webView != null) {
-                    if (webView.canGoBack()) {
-                        webView.goBack();
-                    } else {
-                        // إجبار المتصفح على التراجع للخلف وإغلاق نافذة الفيديو عبر جافاسكريبت
-                        webView.evaluateJavascript("window.history.back();", null);
-                    }
+                    webView.evaluateJavascript(
+                        "(function() {" +
+                        "  var videos = document.querySelectorAll('video');" +
+                        "  videos.forEach(function(v) { v.pause(); v.currentTime = 0; });" +
+                        "  if (typeof closeVideo === 'function') { closeVideo(); }" +
+                        "  else if (typeof goBack === 'function') { goBack(); }" +
+                        "  else {" +
+                        "    var videoContainers = document.querySelectorAll('.video-container, .player, .modal, #videoView, #playerView');" +
+                        "    videoContainers.forEach(function(el) { el.style.display = 'none'; });" +
+                        "    window.history.back();" +
+                        "  }" +
+                        "})();", null);
                 }
             }
         });
 
-        // إضافة الزر إلى الحاوية ليطفو فوق المحتوى والفيديوهات
         frameLayout.addView(backButton);
-
         setContentView(frameLayout);
     }
 
-    // تفعيل زر الرجوع الفيزيائي في الهاتف أيضاً
     @Override
     public void onBackPressed() {
         if (webView != null) {
-            if (webView.canGoBack()) {
-                webView.goBack();
-                return;
-            } else {
-                webView.evaluateJavascript("window.history.back();", null);
-            }
+            webView.evaluateJavascript(
+                "(function() {" +
+                "  var videos = document.querySelectorAll('video');" +
+                "  videos.forEach(function(v) { v.pause(); });" +
+                "})();", null);
         }
         super.onBackPressed();
     }
