@@ -93,20 +93,19 @@ public class MainActivity extends Activity {
                 FrameLayout.LayoutParams.MATCH_PARENT, 
                 FrameLayout.LayoutParams.MATCH_PARENT));
 
-       // تصميم زر الرجوع العائم بحجم أصغر
+      // تصميم زر الرجوع على شكل قمر بخلفية شفافة
         Button backButton = new Button(this);
-        backButton.setText("⬅ رجوع");
-        backButton.setTextColor(Color.WHITE);
-        backButton.setTextSize(14); // تصغير حجم الخط
-        backButton.setBackgroundColor(Color.parseColor("#CCFF5722"));
-        backButton.setPadding(25, 10, 25, 10); // تصغير أبعاد الزر
+        backButton.setText("🌙"); // استخدام إيموجي القمر
+        backButton.setTextSize(32); // حجم القمر (يمكنك تكبيره أو تصغيره بتغيير هذا الرقم)
+        backButton.setBackgroundColor(Color.TRANSPARENT); // خلفية شفافة ليظهر القمر وحده
+        backButton.setPadding(15, 15, 15, 15);
 
-        // وضع الزر في الزاوية اليمنى بالأسفل
+        // وضع القمر في الزاوية اليمنى بالأسفل
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT, 
                 FrameLayout.LayoutParams.WRAP_CONTENT);
         params.gravity = Gravity.BOTTOM | Gravity.RIGHT; // التثبيت في الزاوية اليمنى السفلية
-        params.setMargins(0, 0, 40, 120); // إزاحته عن الحواف
+        params.setMargins(0, 0, 40, 120); // إزاحته قليلاً عن حافة الشاشة ليكون سهل الضغط
         backButton.setLayoutParams(params);
 
         // التعديل الجذري: عند الضغط يتم إعادة تحميل الصفحة للعودة إلى الشاشة الأولى فوراً
