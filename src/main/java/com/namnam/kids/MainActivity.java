@@ -27,8 +27,10 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // إنشاء حاوية رئيسية
         FrameLayout frameLayout = new FrameLayout(this);
 
+        // إعداد الـ WebView
         webView = new WebView(this);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setDomStorageEnabled(true);
@@ -37,6 +39,7 @@ public class MainActivity extends Activity {
         
         webView.setWebViewClient(new WebViewClient());
 
+        // معالجة اختيار الملفات
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
@@ -57,9 +60,10 @@ public class MainActivity extends Activity {
             }
         });
 
-        // تحميل صفحة الويب المحلية[cite: 5]
+        // تحميل صفحة الويب
         webView.loadUrl("file:///android_asset/index.html");
 
+        // معالجة التحميلات
         webView.setDownloadListener(new DownloadListener() {
             @Override
             public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimeType, long contentLength) {
@@ -93,13 +97,14 @@ public class MainActivity extends Activity {
                 FrameLayout.LayoutParams.MATCH_PARENT, 
                 FrameLayout.LayoutParams.MATCH_PARENT));
 
-        // تصميم زر الرجوع العائم في أسفل الشاشة
+        // تصميم زر الرجوع
         Button backButton = new Button(this);
-        backButton.setText("⬅ رجوع للخلف");
+        backButton.setText("⬅ رجوع");
         backButton.setTextColor(Color.WHITE);
         backButton.setBackgroundColor(Color.parseColor("#CCFF5722"));
         backButton.setPadding(40, 20, 40, 20);
 
+        // وضع الزر في أسفل الشاشة بالمنتصف
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT, 
                 FrameLayout.LayoutParams.WRAP_CONTENT);
@@ -107,7 +112,7 @@ public class MainActivity extends Activity {
         params.setMargins(0, 0, 0, 60);
         backButton.setLayoutParams(params);
 
-        // عند الضغط على زر الرجوع، يتم إيقاف الفيديو وإخفاء مشغلات العرض برمجياً عبر الجافاسكريبت
+        // برمجة وظيفة الرجوع وإغلاق الفيديو
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -132,6 +137,7 @@ public class MainActivity extends Activity {
         setContentView(frameLayout);
     }
 
+    // تفعيل زر الرجوع الفيزيائي في الهاتف
     @Override
     public void onBackPressed() {
         if (webView != null) {
@@ -144,6 +150,7 @@ public class MainActivity extends Activity {
         super.onBackPressed();
     }
 
+    // استقبال الملفات من الهاتف
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
