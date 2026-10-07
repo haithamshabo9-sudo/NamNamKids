@@ -21,10 +21,8 @@ public class MainActivity extends AppCompatActivity {
         webView.getSettings().setDomStorageEnabled(true);
         webView.setWebViewClient(new WebViewClient());
 
-        // تحميل صفحة الويب المحلية
         webView.loadUrl("file:///android_asset/index.html");
 
-        // معالجة طلبات التنزيل للصور والفيديوهات
         webView.setDownloadListener(new DownloadListener() {
             @Override
             public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimeType, long contentLength) {
@@ -35,11 +33,14 @@ public class MainActivity extends AppCompatActivity {
                     request.setDescription("جاري تنزيل الملف...");
                     request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
                     
-                    // استخراج اسم الملف من الرابط
-                    String fileName = url.substring(url.lastIndexOf('/') + 1);
-                    if (fileName.isEmpty()) {
-                        fileName = "download_file";
+                    String fileName = "downloaded_file";
+                    if (url != null && url.contains("/")) {
+                        fileName = url.substring(url.lastIndexOf('/') + 1);
+                        if (fileName.isEmpty()) {
+                            fileName = "media_file";
+                        }
                     }
+                    
                     request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
 
                     DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
