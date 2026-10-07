@@ -4,7 +4,7 @@
         android:allowBackup="false"
        android:icon="@drawable/ic_launcher"
      android:roundIcon="@drawable/ic_launcher"
-        android:label="NamNam kids"
+        android:label="Shaghaf Kids"
         android:supportsRtl="true"
         android:hardwareAccelerated="true"
         android:usesCleartextTraffic="false"
