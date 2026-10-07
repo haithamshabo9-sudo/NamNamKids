@@ -27,10 +27,8 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // إنشاء حاوية رئيسية
         FrameLayout frameLayout = new FrameLayout(this);
 
-        // إعداد الـ WebView
         webView = new WebView(this);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setDomStorageEnabled(true);
@@ -39,7 +37,6 @@ public class MainActivity extends Activity {
         
         webView.setWebViewClient(new WebViewClient());
 
-        // معالجة اختيار الملفات
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
@@ -60,10 +57,9 @@ public class MainActivity extends Activity {
             }
         });
 
-        // تحميل صفحة الويب
+        // تحميل صفحة الويب المحلية عند فتح التطبيق[cite: 5]
         webView.loadUrl("file:///android_asset/index.html");
 
-        // معالجة التحميلات
         webView.setDownloadListener(new DownloadListener() {
             @Override
             public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimeType, long contentLength) {
@@ -97,14 +93,13 @@ public class MainActivity extends Activity {
                 FrameLayout.LayoutParams.MATCH_PARENT, 
                 FrameLayout.LayoutParams.MATCH_PARENT));
 
-        // تصميم زر الرجوع
+        // تصميم زر الرجوع العائم في أسفل الشاشة
         Button backButton = new Button(this);
         backButton.setText("⬅ رجوع");
         backButton.setTextColor(Color.WHITE);
         backButton.setBackgroundColor(Color.parseColor("#CCFF5722"));
         backButton.setPadding(40, 20, 40, 20);
 
-        // وضع الزر في أسفل الشاشة بالمنتصف
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT, 
                 FrameLayout.LayoutParams.WRAP_CONTENT);
@@ -112,23 +107,12 @@ public class MainActivity extends Activity {
         params.setMargins(0, 0, 0, 60);
         backButton.setLayoutParams(params);
 
-        // برمجة وظيفة الرجوع وإغلاق الفيديو
+        // التعديل الجذري: عند الضغط يتم إعادة تحميل الصفحة للعودة إلى الشاشة الأولى فوراً
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (webView != null) {
-                    webView.evaluateJavascript(
-                        "(function() {" +
-                        "  var videos = document.querySelectorAll('video');" +
-                        "  videos.forEach(function(v) { v.pause(); v.currentTime = 0; });" +
-                        "  if (typeof closeVideo === 'function') { closeVideo(); }" +
-                        "  else if (typeof goBack === 'function') { goBack(); }" +
-                        "  else {" +
-                        "    var videoContainers = document.querySelectorAll('.video-container, .player, .modal, #videoView, #playerView');" +
-                        "    videoContainers.forEach(function(el) { el.style.display = 'none'; });" +
-                        "    window.history.back();" +
-                        "  }" +
-                        "})();", null);
+                    webView.loadUrl("file:///android_asset/index.html");
                 }
             }
         });
@@ -137,20 +121,16 @@ public class MainActivity extends Activity {
         setContentView(frameLayout);
     }
 
-    // تفعيل زر الرجوع الفيزيائي في الهاتف
+    // زر الرجوع في الهاتف (الفيزيائي)
     @Override
     public void onBackPressed() {
-        if (webView != null) {
-            webView.evaluateJavascript(
-                "(function() {" +
-                "  var videos = document.querySelectorAll('video');" +
-                "  videos.forEach(function(v) { v.pause(); });" +
-                "})();", null);
+        if (webView != null && webView.canGoBack()) {
+            webView.goBack();
+        } else {
+            super.onBackPressed(); // الخروج من التطبيق
         }
-        super.onBackPressed();
     }
 
-    // استقبال الملفات من الهاتف
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
