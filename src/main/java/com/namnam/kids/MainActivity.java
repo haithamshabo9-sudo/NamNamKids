@@ -93,18 +93,20 @@ public class MainActivity extends Activity {
                 FrameLayout.LayoutParams.MATCH_PARENT, 
                 FrameLayout.LayoutParams.MATCH_PARENT));
 
-        // تصميم زر الرجوع العائم في أسفل الشاشة
+       // تصميم زر الرجوع العائم بحجم أصغر
         Button backButton = new Button(this);
         backButton.setText("⬅ رجوع");
         backButton.setTextColor(Color.WHITE);
+        backButton.setTextSize(14); // تصغير حجم الخط
         backButton.setBackgroundColor(Color.parseColor("#CCFF5722"));
-        backButton.setPadding(40, 20, 40, 20);
+        backButton.setPadding(25, 10, 25, 10); // تصغير أبعاد الزر
 
+        // وضع الزر في الزاوية اليمنى بالأسفل
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT, 
                 FrameLayout.LayoutParams.WRAP_CONTENT);
-        params.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-        params.setMargins(0, 0, 0, 60);
+        params.gravity = Gravity.BOTTOM | Gravity.RIGHT; // التثبيت في الزاوية اليمنى السفلية
+        params.setMargins(0, 0, 40, 120); // إزاحته عن الحواف
         backButton.setLayoutParams(params);
 
         // التعديل الجذري: عند الضغط يتم إعادة تحميل الصفحة للعودة إلى الشاشة الأولى فوراً
