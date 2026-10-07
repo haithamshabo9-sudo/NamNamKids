@@ -4,14 +4,19 @@ import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.view.Gravity;
+import android.view.View;
 import android.webkit.DownloadListener;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
+import android.widget.FrameLayout;
 
 public class MainActivity extends Activity {
     private WebView webView;
@@ -22,6 +27,9 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // إنشاء حاوية رئيسية لتجميع الـ WebView وزر الرجوع فوقه
+        FrameLayout frameLayout = new FrameLayout(this);
+
         webView = new WebView(this);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setDomStorageEnabled(true);
@@ -30,6 +38,7 @@ public class MainActivity extends Activity {
         
         webView.setWebViewClient(new WebViewClient());
 
+        // معالجة اختيار الملفات والصور والفيديوهات من الجهاز
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
@@ -50,8 +59,10 @@ public class MainActivity extends Activity {
             }
         });
 
+        // تحميل صفحة الويب المحلية للتطبيق[cite: 5]
         webView.loadUrl("file:///android_asset/index.html");
 
+        // معالجة طلبات التنزيل للصور والفيديوهات
         webView.setDownloadListener(new DownloadListener() {
             @Override
             public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimeType, long contentLength) {
@@ -69,7 +80,6 @@ public class MainActivity extends Activity {
                             fileName = "media_file";
                         }
                     }
-                    
                     request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
 
                     DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
@@ -82,20 +92,53 @@ public class MainActivity extends Activity {
             }
         });
 
-        setContentView(webView);
+        // إضافة الـ WebView إلى الحاوية الرئيسية
+        frameLayout.addView(webView, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, 
+                FrameLayout.LayoutParams.MATCH_PARENT));
+
+        // إنشاء زر رجوع عائم (Floating Back Button) يظهر فوق الشاشة والفيديو
+        Button backButton = new Button(this);
+        backButton.setText("⬅ رجوع");
+        backButton.setTextColor(Color.WHITE);
+        backButton.setBackgroundColor(Color.parseColor("#AA000000")); // خلفية سوداء شفافة وجذابة
+        backButton.setPadding(25, 12, 25, 12);
+
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT, 
+                FrameLayout.LayoutParams.WRAP_CONTENT);
+        params.gravity = Gravity.TOP | Gravity.START; // يظهر في أعلى الشاشة من جهة اليسار
+        params.setMargins(25, 25, 0, 0);
+        backButton.setLayoutParams(params);
+
+        // برمجة وظيفة زر الرجوع العائم
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (webView.canGoBack()) {
+                    webView.goBack(); // العودة للصفحة أو الشاشة السابقة داخل الموقع
+                } else {
+                    // إذا كان في الرئيسية، يمكن محاولة تنفيذ أمر إغلاق عبر الجافاسكريبت
+                    webView.evaluateJavascript("if(typeof goBackToHome === 'function') { goBackToHome(); }", null);
+                }
+            }
+        });
+
+        // إضافة الزر إلى الحاوية ليطفو فوق المحتوى
+        frameLayout.addView(backButton);
+
+        // عرض الحاوية كاملة في النشاط
+        setContentView(frameLayout);
     }
 
+    // تفعيل زر الرجوع الفيزيائي في الهاتف أيضاً
     @Override
     public void onBackPressed() {
-        if (webView != null) {
-            // نقوم بإرسال أمر جافاسكريبت للتحقق مما إذا كان التطبيق يعرض فيديو أو نافذة منبثقة، 
-            // أو الرجوع في سجل الـ WebView إذا كان ممكناً.
-            if (webView.canGoBack()) {
-                webView.goBack();
-                return;
-            }
+        if (webView != null && webView.canGoBack()) {
+            webView.goBack();
+        } else {
+            super.onBackPressed();
         }
-        super.onBackPressed();
     }
 
     @Override
