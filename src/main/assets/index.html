@@ -688,7 +688,7 @@ $('mute').onclick = () => { if (locked) return; muted = !muted; $('mute').textCo
 async function refreshHome(){
   refreshRecov();
   const h = new Date().getHours(), pf = prof();
-  $('greet').textContent = (h < 12 ? 'صباح الخير ☀️' : h < 18 ? 'مرحبًا 👋' : 'مساء الخير 🌙') + ' يا ' + pf.name;
+  $('greet').textContent = (h < 12 ? 'صباح الخير ☀️' : h < 18 ? 'مرحبًا 👋' : 'مساء الخير 🌙') + '  ' + pf.name;
   $('kidchips').innerHTML = '';
   profiles.forEach(p => {
     const b = document.createElement('button'); b.className = 'kid' + (p.id === curProfile ? ' on' : ''); b.setAttribute('aria-label', p.name);
