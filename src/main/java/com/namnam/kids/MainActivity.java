@@ -10,41 +10,108 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.view.Gravity;
 import android.view.View;
+import android.view.WindowManager;
 import android.webkit.DownloadListener;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 public class MainActivity extends Activity {
     private WebView webView;
     private ValueCallback<Uri[]> uploadMessage;
     private final static int FILE_CHOOSER_RESULT_CODE = 1;
 
-    // متغيرات جديدة للتحكم في وضع ملء الشاشة للفيديو
     private View customView;
     private WebChromeClient.CustomViewCallback customViewCallback;
     private FrameLayout frameLayout;
     private Button backButton;
+    private FrameLayout splashScreen; // متغير الشاشة الترحيبية
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // 1. منع إطفاء الشاشة أثناء استخدام التطبيق
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         frameLayout = new FrameLayout(this);
 
         webView = new WebView(this);
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.getSettings().setDomStorageEnabled(true);
-        webView.getSettings().setAllowFileAccess(true);
-        webView.getSettings().setAllowContentAccess(true);
+        WebSettings settings = webView.getSettings();
+        settings.setJavaScriptEnabled(true);
+        settings.setDomStorageEnabled(true);
+        settings.setAllowFileAccess(true);
+        settings.setAllowContentAccess(true);
+
+        // 2. تحسين الأداء (تفعيل التخزين المؤقت الكاش)
+        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+
+        // 3. منع التكبير والتصغير وإخفاء أشرطة التمرير
+        settings.setSupportZoom(false);
+        settings.setBuiltInZoomControls(false);
+        settings.setDisplayZoomControls(false);
+        webView.setVerticalScrollBarEnabled(false);
+        webView.setHorizontalScrollBarEnabled(false);
+        webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+
+        // 4. إعداد الشاشة الترحيبية (Splash Screen) برمجياً
+        splashScreen = new FrameLayout(this);
+        splashScreen.setBackgroundColor(Color.parseColor("#87CEEB")); // لون أزرق سماوي لطيف للأطفال
         
-        webView.setWebViewClient(new WebViewClient());
+        TextView splashText = new TextView(this);
+        splashText.setText("شغف كيدز ترحب بكم 🚀");
+        splashText.setTextSize(28);
+        splashText.setTextColor(Color.WHITE);
+        splashText.setGravity(Gravity.CENTER);
+        
+        FrameLayout.LayoutParams textParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT, 
+                FrameLayout.LayoutParams.WRAP_CONTENT);
+        textParams.gravity = Gravity.CENTER;
+        splashScreen.addView(splashText, textParams);
+
+        // 5. حماية الطفل (منع الروابط) وشاشة الخطأ
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                String url = request.getUrl().toString();
+                // منع فتح مواقع الإنترنت الخارجية لحماية الطفل وإبقائه داخل التطبيق
+                if (url.startsWith("http://") || url.startsWith("https://")) {
+                    return true; 
+                }
+                return false; 
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                // إخفاء الشاشة الترحيبية بلمسة حركية عند اكتمال تحميل اللعبة
+                if (splashScreen.getVisibility() == View.VISIBLE) {
+                    splashScreen.animate().alpha(0f).setDuration(500).withEndAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            splashScreen.setVisibility(View.GONE);
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                if (request.isForMainFrame()) {
+                    String errorHtml = "<html><body style='display:flex;justify-content:center;align-items:center;height:100vh;background-color:#f8f9fa;'><h1 style='color:#dc3545;font-family:sans-serif;'>عذراً، حدث خطأ في التحميل! 🦖</h1></body></html>";
+                    view.loadData(errorHtml, "text/html", "UTF-8");
+                }
+            }
+        });
 
         webView.setWebChromeClient(new WebChromeClient() {
-            // رفع الملفات
             @Override
             public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
                 if (uploadMessage != null) {
@@ -63,7 +130,6 @@ public class MainActivity extends Activity {
                 return true;
             }
 
-            // --- دوال تكبير الفيديو لملء الشاشة ---
             @Override
             public void onShowCustomView(View view, CustomViewCallback callback) {
                 if (customView != null) {
@@ -73,16 +139,13 @@ public class MainActivity extends Activity {
                 customView = view;
                 customViewCallback = callback;
 
-                // إخفاء الويب فيو وزر القمر أثناء مشاهدة الفيديو
                 webView.setVisibility(View.GONE);
                 if (backButton != null) backButton.setVisibility(View.GONE);
 
-                // عرض الفيديو بملء الشاشة
                 frameLayout.addView(customView, new FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT, 
                         FrameLayout.LayoutParams.MATCH_PARENT));
                 
-                // إخفاء شريط الإشعارات العلوي لتجربة ملء شاشة حقيقية
                 getWindow().getDecorView().setSystemUiVisibility(
                         View.SYSTEM_UI_FLAG_FULLSCREEN | 
                         View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | 
@@ -94,12 +157,10 @@ public class MainActivity extends Activity {
                 if (customView == null) {
                     return;
                 }
-                // إزالة واجهة الفيديو
                 customView.setVisibility(View.GONE);
                 frameLayout.removeView(customView);
                 customView = null;
 
-                // إظهار الويب فيو وزر القمر مرة أخرى
                 webView.setVisibility(View.VISIBLE);
                 if (backButton != null) backButton.setVisibility(View.VISIBLE);
 
@@ -108,12 +169,10 @@ public class MainActivity extends Activity {
                     customViewCallback = null;
                 }
                 
-                // إعادة إظهار شريط الإشعارات
                 getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
             }
         });
 
-        // تحميل صفحة الويب المحلية عند فتح التطبيق
         webView.loadUrl("file:///android_asset/index.html");
 
         webView.setDownloadListener(new DownloadListener() {
@@ -122,7 +181,7 @@ public class MainActivity extends Activity {
                 try {
                     DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
                     request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE);
-                    request.setTitle("NamNam Kids");
+                    request.setTitle("Shaghaf Kids");
                     request.setDescription("جاري تنزيل الملف...");
                     request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
                     
@@ -145,11 +204,11 @@ public class MainActivity extends Activity {
             }
         });
 
+        // ترتيب الواجهات: وضعنا الويب فيو أولاً، ثم زر الرجوع، ثم الشاشة الترحيبية فوقهم جميعاً
         frameLayout.addView(webView, new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, 
                 FrameLayout.LayoutParams.MATCH_PARENT));
 
-        // تصميم زر الرجوع
         backButton = new Button(this);
         backButton.setText("🌙"); 
         backButton.setTextSize(32); 
@@ -173,20 +232,23 @@ public class MainActivity extends Activity {
         });
 
         frameLayout.addView(backButton);
+        
+        // إضافة الشاشة الترحيبية في النهاية لتكون في الطبقة العليا
+        frameLayout.addView(splashScreen, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, 
+                FrameLayout.LayoutParams.MATCH_PARENT));
+                
         setContentView(frameLayout);
     }
 
-    // زر الرجوع في الهاتف (الفيزيائي)
     @Override
     public void onBackPressed() {
-        // إذا كان الفيديو يعمل بملء الشاشة، قم بالخروج منه أولاً
         if (customView != null) {
             WebChromeClient client = webView.getWebChromeClient();
             if (client != null) {
                 client.onHideCustomView();
             }
         } 
-        // وإلا، ارجع للصفحة السابقة أو اخرج من التطبيق
         else if (webView != null && webView.canGoBack()) {
             webView.goBack();
         } else {
