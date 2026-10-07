@@ -14,15 +14,17 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        WebView webView = findViewById(R.id.webView);
+        // إنشـاء متصفح الـ WebView برمجياً مباشرة لتجنب أخطاء ملفات الـ XML
+        WebView webView = new WebView(this);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setDomStorageEnabled(true);
         webView.setWebViewClient(new WebViewClient());
 
+        // تحميل صفحة الويب المحلية
         webView.loadUrl("file:///android_asset/index.html");
 
+        // معالجة طلبات التنزيل للصور والفيديوهات
         webView.setDownloadListener(new DownloadListener() {
             @Override
             public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimeType, long contentLength) {
@@ -52,5 +54,8 @@ public class MainActivity extends Activity {
                 }
             }
         });
+
+        // عرض الـ WebView كواجهة أساسية للنشاط
+        setContentView(webView);
     }
 }
