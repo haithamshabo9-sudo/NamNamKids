@@ -97,48 +97,53 @@ public class MainActivity extends Activity {
                 FrameLayout.LayoutParams.MATCH_PARENT, 
                 FrameLayout.LayoutParams.MATCH_PARENT));
 
-        // إنشاء زر رجوع عائم (Floating Back Button) يظهر فوق الشاشة والفيديو
+        // إنشاء زر رجوع عائم يظهر في "أسفل الشاشة" بمنتصف العرض
         Button backButton = new Button(this);
-        backButton.setText("⬅ رجوع");
+        backButton.setText("⬅ رجوع للخلف");
         backButton.setTextColor(Color.WHITE);
-        backButton.setBackgroundColor(Color.parseColor("#AA000000")); // خلفية سوداء شفافة وجذابة
-        backButton.setPadding(25, 12, 25, 12);
+        backButton.setBackgroundColor(Color.parseColor("#CCFF5722")); // لون برتقالي غامق وبارز ومريح للعينية
+        backButton.setPadding(40, 20, 40, 20);
 
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT, 
                 FrameLayout.LayoutParams.WRAP_CONTENT);
-        params.gravity = Gravity.TOP | Gravity.START; // يظهر في أعلى الشاشة من جهة اليسار
-        params.setMargins(25, 25, 0, 0);
+        params.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL; // التثبيت في الأسفل بالمنتصف
+        params.setMargins(0, 0, 0, 60); // مسافة مرتفعة قليلاً عن حافة الهاتف السفلية
         backButton.setLayoutParams(params);
 
-        // برمجة وظيفة زر الرجوع العائم
+        // برمجة وظيفة زر الرجوع لتعمل بفعالية عبر الجافاسكريبت والتاريخ
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (webView.canGoBack()) {
-                    webView.goBack(); // العودة للصفحة أو الشاشة السابقة داخل الموقع
-                } else {
-                    // إذا كان في الرئيسية، يمكن محاولة تنفيذ أمر إغلاق عبر الجافاسكريبت
-                    webView.evaluateJavascript("if(typeof goBackToHome === 'function') { goBackToHome(); }", null);
+                if (webView != null) {
+                    if (webView.canGoBack()) {
+                        webView.goBack();
+                    } else {
+                        // إجبار المتصفح على التراجع للخلف وإغلاق نافذة الفيديو عبر جافاسكريبت
+                        webView.evaluateJavascript("window.history.back();", null);
+                    }
                 }
             }
         });
 
-        // إضافة الزر إلى الحاوية ليطفو فوق المحتوى
+        // إضافة الزر إلى الحاوية ليطفو فوق المحتوى والفيديوهات
         frameLayout.addView(backButton);
 
-        // عرض الحاوية كاملة في النشاط
         setContentView(frameLayout);
     }
 
     // تفعيل زر الرجوع الفيزيائي في الهاتف أيضاً
     @Override
     public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) {
-            webView.goBack();
-        } else {
-            super.onBackPressed();
+        if (webView != null) {
+            if (webView.canGoBack()) {
+                webView.goBack();
+                return;
+            } else {
+                webView.evaluateJavascript("window.history.back();", null);
+            }
         }
+        super.onBackPressed();
     }
 
     @Override
